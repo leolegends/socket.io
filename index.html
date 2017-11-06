@@ -1,0 +1,297 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>chat P2P</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.1/jquery.toast.min.css" integrity="sha256-WolrNTZ9lY0QL5f0/Qi1yw3RGnDLig2HVLYkrshm7Y0=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
+    <link rel="stylesheet" href="style.css"/>
+    <script src="js/jquery.min.js"></script>
+    <script src="bootstrap/js/dist/popover.js"></script>
+    <script src="bootstrap/js/dist/dropdown.js"></script>
+    <script src="bootstrap/js/dist/collapse.js"></script>    
+    <script src="bootstrap/js/dist/modal.js"></script>    
+    <script src="bootstrap/js/dist/tooltip.js"></script>    
+    <script src="bootstrap/js/dist/util.js"></script>    
+    <script src="bootstrap/dist/js/bootstrap.js"></script>
+    <script src="http://192.168.0.129:3000/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.1/jquery.toast.min.js" integrity="sha256-jJcc8SMFEvXl7AqOTKSLOOxo9HxGbyeKZZHEzBVlXMs=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function(){
+
+
+        $('#Autentique').modal('show');             
+       
+        $("#prontinho").click(function(){
+            var nome_sessao = $("#nome_sessao").val();
+            if (nome_sessao == ""){
+
+                $.toast({
+                    heading: '<h4>Ajuda ai pow!</h4>',
+                    text: '<p>Coloca um nome pra gente te identificar <i class="fa fa-thumbs-o-up" aria-hidden="true"></i></p>',
+                    showHideTransition: 'slide',
+                    bgColor: '#e74c3c',
+                    position: 'bottom-center',
+                    icon: 'error'
+                });
+
+                return false;
+            }
+
+            $("#Autentique").modal('hide');
+        });
+        
+            $('#verHistorico').collapse('toggle');
+
+            $("#digitando").hide();
+
+            $("#msg").keyup(function(){
+                var size = $("#msg").val();
+                if(size.length > 0){
+                $("#digitando").show();
+                }else{
+                $("#digitando").hide();
+                }
+            });
+
+    // Connect to our node/websockets server
+    var socket = io.connect('http://192.168.0.129:3000');
+
+    // Initial set of notes, loop through and add to list
+   /* socket.on('initial notes', function(data){
+        var html = ''
+        for (var i = 0; i < data.length; i++){
+            // We store html as a var then add to DOM after for efficiency
+            html += '<li>' + data[i].note + '</li>'
+        }
+        $('#notes').html(html)
+    })
+    */
+    socket.on('limite', function(data){
+
+    })
+    // New note emitted, add it to our list of current notes
+
+    socket.on('new note', function(retorno){
+
+
+        var data = new Date();
+        var dia = data.getDate();
+        if (dia.toString().length == 1)
+          dia = "0"+dia;
+        var mes = data.getMonth()+1;
+        if (mes.toString().length == 1)
+          mes = "0"+mes;
+        var ano = data.getFullYear();  
+        data =  dia+"/"+mes+"/"+ano;
+
+    momentoAtual = new Date() 
+    hora = momentoAtual.getHours() 
+    if (hora < 10) { hora = '0' + hora; }
+    minuto = momentoAtual.getMinutes() 
+    segundo = momentoAtual.getSeconds() 
+
+    horaImprimivel = hora + " : " + minuto + " : " + segundo 
+
+    //console.log(horaImprimivel); 
+
+    salva = data + " - " + horaImprimivel;
+    
+    console.log(retorno);
+
+        $('#usuario1').append(` 
+            <div class="row usuario1">
+            <div class="float-left">
+            <span class="btn btn-outline-primary disabled">`+ $("#nome_sessao").val() +` <i class="fa fa-commenting-o" aria-hidden="true"></i></span></br></br>
+            <span>`+salva+`</span></br>
+            <p class="text-left fina enviada">`+ retorno +`</p>
+            </div>
+            </div>`);
+
+        $.fn.scrollDown=function(){ 
+            var el=$(this);
+            el.scrollTop(el[0].scrollHeight);
+        };
+
+        $('.rooler').scrollDown();
+    
+    })
+
+
+    // New socket connected, display new count on page
+    socket.on('users connected', function(data){
+
+        $('#usersConnected').html(data.socket);
+        console.log(data);
+        var b = window.clientInformation.appCodeName;
+
+        socket.emit('grava_id', socket.id);
+
+
+        $.toast({
+            heading: 'Usuario de Numero: ' + data.socket,
+            text: 'Sessao: ' + data.sessao,
+            showHideTransition: 'slide',
+            icon: 'info'
+        });
+    })
+    
+    socket.on('trava_acesso', function(data){
+        console.log(data);
+        if(data){
+            $("body").html("<div class='text-center'><h1 class='text-white'>Acesso Limitado!</h1></div>");
+        }
+    })
+
+    // Add a new (random) note, emit to server to let others know
+
+    $("#enviar").click(function(e){
+        var texto = $("#msg").val()
+        if(texto == ""){
+            return false;
+        }
+        e.preventDefault()
+        socket.emit('new note', {note: texto })
+        $("#msg").val("")
+        
+        socket.emit('load_mensagens', true)
+
+        $("#digitando").hide();
+    });
+
+    socket.on('load_mensagens', function(data){
+        console.log("real time DB");
+        console.log(data);
+           // for(var i=0; i< data.length; i++){
+              var b = data.length;
+              console.log(b);
+              if(b>=1){
+               $(".linhas").append("<tr><td>" + data[b-1].texto + "</td></tr>");
+               $("#alert").remove();
+           }else{
+               $(".linhas").remove();
+               $("tbody").html("<tr id='alert'><td><b class=\"text-center\">Registros Apagados.</b></td></tr>");
+           }
+           //}
+       })    
+
+    socket.on('mensagens', function(data){
+        console.log(data);
+        for(var i=0; i< data.length; i++){
+           $(".linhas").append("<tr><td>" + data[i].texto + "</td></tr>");
+       }
+   })
+
+
+    $("#apagar").click(function(e){
+
+        socket.emit('apagar_tudo', true)
+
+        e.preventDefault();
+
+    });
+
+
+})  
+</script>
+</head>
+<body style="background-color: #2c3e50;">
+    <div class="container" style="margin-top: 1cm;">
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="card tamanho">
+                    <div class="card-title" style="padding: 0.5cm;">
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12">
+                                <center>
+                                <p class='btn btn-outline-primary text-center titulo' id='lim'>Chat <i class="fa fa-comments-o" aria-hidden="true"></i></p></br>
+                                <span class="btn btn-outline-danger disabled">Pessoas nessa sessão: <span class='badge badge-danger' id="usersConnected"></span></span>
+                                </center>
+                            </div>
+                            </div>
+                        </div>
+<!-- inicio -->         <div class="rooler">
+                        <div class="card-outline-primary" style="padding-left: 0.4cm; padding-right: 0.4cm;">
+                         <div id="chatbox" style="padding: 0.5cm;">
+                           
+                            <span id="usuario1"></span>
+
+                            <div class="row float-right">
+                                <div class="float-right">
+                                   <div class="float-right">
+                                      <span class="btn btn-outline-danger disabled">Tainá <i class="fa fa-commenting-o" aria-hidden="true"></i></span>
+                                  </div></br>
+                                  <p class="text-right fina recebida">Hello Boy, you is a bad guy!</p>
+                              </div>
+
+                          </div>
+                      </div>
+                  </div>
+              </div>
+                  <!-- fim -->
+                  <div class="card-header">
+                    <span id="digitando">Digitando ... </br></span>
+                    <form class="form-group">
+                        <div class="input-group">
+                            <input type="text" name="mensagem" class="form-control btn-toolbar" id="msg">
+                            <div class="btn-group float-right">
+                                <button class="btn btn-outline-success" id="enviar"><i class="fa fa-share" aria-hidden="true"></i></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+     <div class="col-md-12 col-sm-12" style="padding: 0.5cm;">
+        <center>
+            <a data-toggle="collapse" class="btn btn-outline-secondary" data-parent="#exampleAccordion" href="#exampleAccordion1" id='verHistorico' aria-expanded="true" aria-controls="exampleAccordion1">
+             Ver Histórico
+         </a>
+     </center>
+     <div id="exampleAccordion1" class="collapse hide" role="tabpanel">
+        <table class="table table-inverse">
+            <thead>
+                <th class="text-center">
+                    Historico de Conversas:
+                </th>    
+            </thead>
+            <tbody class="linhas text-center">
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade modalColor" id="Autentique" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"  data-keyboard="false" data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fina" id="exampleModalLabel">Bem vindo ao Chat! <i class="fa fa-commenting-o" aria-hidden="true"></i>
+</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="text-center fina">Autentique-se rapidinho, só coloque o seu nome!</p>
+        <input type="text" name="nome_sessao" id="nome_sessao" class="form-control">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-success" id="prontinho">Prontinho <i class="fa fa-check" aria-hidden="true"></i>
+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>

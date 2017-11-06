@@ -1,0 +1,70 @@
+.fina {	
+	font-weight: 100 !important;
+}
+
+.titulo {
+	font-weight: lighter;
+	font-size: 30px;
+/*	animation-name: animacao;
+	animation-delay: 4s;
+	animation-duration: 4s;
+    animation-iteration-count: infinite;
+*/
+}
+
+.modalColor {
+	background-color: #2c3e50;
+}
+
+@keyframes animacao {
+    0%   {border-radius: 0;}
+    25%  {border-radius: 20px;}
+    50%  {border-radius: 40px;}
+    100% {border-radius: 60px;}
+
+}
+
+.enviada {
+	padding-top: 0.5cm;
+	font-size: 14px;
+}
+
+.recebida {
+	padding-top: 0.7cm;
+	font-size: 14px;
+}
+
+#digitando {
+	padding: 0.5cm;
+	font-style: italic;
+	font-size: 12px;
+	color: #2c3e50;
+	font-weight: 100;
+}
+
+.usuario1 {
+	font-size: 12px;
+}
+
+.usuario2 {
+	font-size: 12px;
+}
+
+.rooler {
+	overflow: scroll;
+	 width: auto;
+    height: 400px;
+}
+
+.tamanho {
+	height: 15cm;
+}
+
+/* max device width */
+@media screen and (max-device-width: 480px) {
+		.tamanho {
+		height: 5cm;
+	}
+
+}
+
