@@ -1,6 +1,6 @@
 
 
-# socket.io
+### socket.io
 
 ### Dependencias:
 
@@ -16,5 +16,8 @@
 
  pm2 start server.js
 
+### Banco de Dados:
+
+importar arquivo sql e configurar seu banco com a senha.
 
 
