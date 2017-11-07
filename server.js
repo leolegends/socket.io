@@ -18,9 +18,13 @@ db.connect(function(err){
 var notes = []
 var isInitNotes = false
 var socketCount = 0
+var contador = 0
 var sessionid = []
 
+	
 io.sockets.on('connection', function(socket){
+
+
     // Socket has connected, increase socket count
     socketCount++
 
@@ -28,13 +32,37 @@ io.sockets.on('connection', function(socket){
     	sessionid.push(data);
     })
 
+
+	contador++
+    
+
+	socket.emit('id_sessao', contador)
+
+
+	if(contador > 1){
+		contador = 0
+	}
+
+
+   socket.on('digitando', function(data){
+
+   		if(data){
+   			io.sockets.emit('digitando_resposta', true);
+   		}else{
+   			io.sockets.emit('digitando_resposta', false);
+   		}
+
+   });
+
     // Let all sockets know how many are connected
   	sessionid.push[socket.id]
-    socket.emit('users connected', {socket: socketCount , sessao: sessionid[socketCount]})	
+   
+    io.sockets.emit('users connected', {socket: socketCount , sessao: sessionid[socketCount]})	
+ 
     socket.on('disconnect', function() {
         // Decrease the socket count on a disconnect, emit
         socketCount--
-        socket.emit('users connected', {socket: socketCount , sessao: sessionid[socketCount]})
+        io.sockets.emit('users connected', {socket: socketCount , sessao: sessionid[socketCount]})
         sessionid.pop[socketCount]
 
     })
@@ -46,13 +74,13 @@ io.sockets.on('connection', function(socket){
   				}
 
         db.query('select * from chat', function(err, result, fields){
-    		io.sockets.emit('mensagens', result)
+    		socket.emit('mensagens', result)
     	})
  
     socket.on('new note', function(data){
         // New note added, push to all sockets and insert into db
 //        notes.push(data)
-        io.sockets.emit('new note', data.note)
+        io.sockets.emit('new note', {note: data.note, id: data.id, nome: data.nome})
         // Use node's db injection format to filter incoming data
         db.query('INSERT INTO chat (texto) VALUES (?)', data.note)
 
@@ -96,6 +124,6 @@ io.sockets.on('connection', function(socket){
         socket.emit('initial notes', notes)
     }
 
-
 })
 	
+

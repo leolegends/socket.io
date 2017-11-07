@@ -63,7 +63,7 @@
 /* max device width */
 @media screen and (max-device-width: 480px) {
 		.tamanho {
-		height: 5cm;
+		height: 10cm;
 	}
 
 }
